@@ -17,7 +17,6 @@ import com.salesforce.jprotoc.Generator;
 import com.salesforce.jprotoc.GeneratorException;
 import com.salesforce.jprotoc.ProtoTypeMap;
 import com.salesforce.jprotoc.ProtocPlugin;
-import grpc.gateway.protoc_gen_openapiv2.options.Annotations;
 
 /**
  * @author Paulo Lopes
@@ -112,12 +111,6 @@ public class MutinyGrpcGenerator extends Generator {
         serviceContext.serviceName = serviceProto.getName();
         serviceContext.deprecated = serviceProto.getOptions() != null && serviceProto.getOptions().getDeprecated();
 
-        log.info("Generating Mutiny gRPC service: " + serviceContext.serviceName);
-        log.info("  - Options: " + Arrays.toString(serviceProto.getOptions().getUninterpretedOptionList().toArray()));
-        if (serviceProto.getOptions().hasExtension(Annotations.openapiv2Tag)) {
-            log.info("Found openapi tag: " + serviceProto.getOptions().getExtension(Annotations.openapiv2Tag));
-        }
-
         List<DescriptorProtos.SourceCodeInfo.Location> allLocationsForService = locations.stream()
                 .filter(location -> location.getPathCount() >= 2 &&
                         location.getPath(0) == DescriptorProtos.FileDescriptorProto.SERVICE_FIELD_NUMBER &&
@@ -152,12 +145,35 @@ public class MutinyGrpcGenerator extends Generator {
         methodContext.isManyInput = methodProto.getClientStreaming();
         methodContext.isManyOutput = methodProto.getServerStreaming();
         methodContext.methodNumber = methodNumber;
-
-        log.info("  - Method: " + methodContext.methodName);
-        log.info("    - Extension: " + Arrays.toString(methodProto.getOptions().getUninterpretedOptionList().toArray()));
+        methodContext.httpPath = methodProto.getName();
+        methodContext.httpMethod = "GET";
 
         if (methodProto.getOptions().hasExtension(AnnotationsProto.http)) {
-            log.info("    Found openapi operation: " + methodProto.getOptions().getExtension(AnnotationsProto.http));
+            if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasGet()) {
+                methodContext.httpMethod = "GET";
+                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getGet();
+                log.info("HTTP GET method found: " + methodContext.httpPath);
+            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasPost()) {
+                methodContext.httpMethod = "POST";
+                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getPost();
+                log.info("HTTP POST method found: " + methodContext.httpPath);
+            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasPut()) {
+                methodContext.httpMethod = "PUT";
+                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getPut();
+                log.info("HTTP PUT method found: " + methodContext.httpPath);
+            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasDelete()) {
+                methodContext.httpMethod = "DELETE";
+                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getDelete();
+                log.info("HTTP DELETE method found: " + methodContext.httpPath);
+            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasPatch()) {
+                methodContext.httpMethod = "PATCH";
+                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getPatch();
+                log.info("HTTP PATCH method found: " + methodContext.httpPath);
+            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasCustom()) {
+                methodContext.httpMethod = "CUSTOM";
+                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getCustom().getPath();
+                log.info("HTTP CUSTOM method found: " + methodContext.httpPath);
+            }
         }
 
         DescriptorProtos.SourceCodeInfo.Location methodLocation = locations.stream()
@@ -370,7 +386,7 @@ public class MutinyGrpcGenerator extends Generator {
      * Template class for proto RPC objects.
      */
     private static class MethodContext {
-        // CHECKSTYLE DISABLE VisibilityModifier FOR 10 LINES
+        // CHECKSTYLE DISABLE VisibilityModifier FOR 13 LINES
         public String methodName;
         public String inputType;
         public String outputType;
@@ -381,6 +397,9 @@ public class MutinyGrpcGenerator extends Generator {
         public String grpcCallsMethodName;
         public int methodNumber;
         public String javaDoc;
+        // HTTP annotations
+        public String httpPath;
+        public String httpMethod;
 
         // This method mimics the upper-casing method ogf gRPC to ensure compatibility
         // See https://github.com/grpc/grpc-java/blob/v1.8.0/compiler/src/java_plugin/cpp/java_generator.cpp#L58
@@ -423,7 +442,7 @@ public class MutinyGrpcGenerator extends Generator {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            ProtocPlugin.generate(List.of(new MutinyGrpcGenerator()), List.of(Annotations.openapiv2Swagger, Annotations.openapiv2Operation, Annotations.openapiv2Schema, Annotations.openapiv2Tag, Annotations.openapiv2Field, AnnotationsProto.http));
+            ProtocPlugin.generate(List.of(new MutinyGrpcGenerator()), List.of(AnnotationsProto.http));
         } else {
             ProtocPlugin.debug(new MutinyGrpcGenerator(), args[0]);
         }

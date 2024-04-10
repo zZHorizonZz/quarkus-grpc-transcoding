@@ -13,12 +13,15 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 class QuarkusGrpcTranscodingProcessor {
 
     private static final String FEATURE = "quarkus-grpc-transcoding";
+    private static final Logger log = LoggerFactory.getLogger(QuarkusGrpcTranscodingProcessor.class);
 
     @BuildStep
     FeatureBuildItem feature() {
@@ -56,6 +59,8 @@ class QuarkusGrpcTranscodingProcessor {
 
             DotName generatedBeanName = generatedBean.name();
             generatedBeans.add(generatedBeanName.toString());
+
+            log.info("Registering a delegating bean for {}", generatedBeanName);
         }
 
         if (!generatedBeans.isEmpty()) {

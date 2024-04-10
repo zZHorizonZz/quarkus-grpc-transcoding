@@ -14,9 +14,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>quarkus-grpc-transcoding</groupId>
-            <artifactId>openapi-proto</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>proto-google-common-protos</artifactId>
+            <version>2.23.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>

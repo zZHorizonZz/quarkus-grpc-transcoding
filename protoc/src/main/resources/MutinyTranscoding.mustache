@@ -11,7 +11,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 @jakarta.annotation.Generated(
 value = "by {{classPrefix}} Grpc generator",
 comments = "Source: {{protoName}}")
-@jakarta.ws.rs.Path("/{{serviceName}}")
+@jakarta.ws.rs.Path("/")
+@jakarta.ws.rs.Produces("application/json")
 public class {{serviceName}}Transcoding extends MutinyTranscodingService {
 
     private final {{serviceName}} delegate;
@@ -21,7 +22,8 @@ public class {{serviceName}}Transcoding extends MutinyTranscodingService {
     }
 
     {{#unaryUnaryMethods}}
-    @jakarta.ws.rs.POST
+    @jakarta.ws.rs.{{httpMethod}}
+    @jakarta.ws.rs.Path("{{httpPath}}")
     public io.smallrye.mutiny.Uni<Response> {{methodName}}(String request) {
        try {
          return delegate.{{methodName}}(this.transcodeRequest(request, {{inputType}}.newBuilder())).map(this::transcodeResponse);

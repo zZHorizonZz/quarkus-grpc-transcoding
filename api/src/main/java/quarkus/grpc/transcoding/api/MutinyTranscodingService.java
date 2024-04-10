@@ -18,7 +18,7 @@ public abstract class MutinyTranscodingService {
 
     protected Response transcodeResponse(MessageOrBuilder response) {
         try {
-            return Response.ok().entity(JsonFormat.printer().print(response)).build();
+            return Response.ok().entity(JsonFormat.printer().omittingInsignificantWhitespace().print(response)).build();
         } catch (InvalidProtocolBufferException e) {
             log.errorv(e, "Error transcoding response: {0}", e.getMessage());
             return Response.serverError().build();

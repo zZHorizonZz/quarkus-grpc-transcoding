@@ -134,15 +134,19 @@
           <entry name="$MAVEN_REPOSITORY$/org/eclipse/parsson/parsson/1.1.5/parsson-1.1.5.jar" />
           <entry name="$MAVEN_REPOSITORY$/io/quarkus/quarkus-bom/3.9.2/quarkus-bom-3.9.2.pom" />
         </processorPath>
-        <module name="quarkus-grpc-transcoding" />
         <module name="quarkus-grpc-transcoding-deployment" />
+        <module name="quarkus-grpc-transcoding" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="openapi-proto" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api" options="-parameters" />
       <module name="api (1)" options="-parameters" />
+      <module name="openapi-proto" options="-parameters" />
       <module name="proto" options="-parameters" />
       <module name="quarkus-grpc-protoc-plugin" options="-parameters" />
       <module name="quarkus-grpc-transcoding" options="-parameters" />

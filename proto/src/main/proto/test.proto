@@ -3,41 +3,15 @@ syntax = "proto3";
 package quarkus.test;
 
 import "google/api/annotations.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
 
 option java_multiple_files = true;
-option java_package = "com.cloudeko.sdk.v1";
-option go_package = "cloudeko.com/go/cloudeko/sdk/v1";
+option java_package = "io.quarkus.test";
 
-option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  info: {
-    title: "Test Service";
-    version: "v1";
-    contact: {
-      name: "Support";
-      url: "https://example.com";
-      email: "support@example.com";
-    };
-  };
-  external_docs: {
-    url: "https://docs.example.com";
-    description: "API Documentation";
-  };
-  schemes: [HTTP, HTTPS];
-  consumes: "application/json";
-  produces: "application/json";
-};
 service TestService {
   rpc Create(TestRequest) returns (TestResponse) {
     option (google.api.http) = {
       post: "/create";
       body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Create";
-      description: "Create a new test resource";
-      operation_id: "create_test";
-      tags: ["Test"];
     };
   }
 }
