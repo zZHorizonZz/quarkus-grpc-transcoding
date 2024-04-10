@@ -1,0 +1,34 @@
+{{#packageName}}
+package {{packageName}};
+{{/packageName}}
+
+import io.quarkus.grpc.GrpcService;
+import jakarta.ws.rs.core.Response;
+import quarkus.grpc.transcoding.api.MutinyTranscodingService;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+@jakarta.annotation.Generated(
+value = "by {{classPrefix}} Grpc generator",
+comments = "Source: {{protoName}}")
+@jakarta.ws.rs.Path("/{{serviceName}}")
+public class {{serviceName}}Transcoding extends MutinyTranscodingService {
+
+    private final {{serviceName}} delegate;
+
+    {{serviceName}}Transcoding(@GrpcService {{serviceName}} delegate) {
+       this.delegate = delegate;
+    }
+
+    {{#unaryUnaryMethods}}
+    @jakarta.ws.rs.POST
+    public io.smallrye.mutiny.Uni<Response> {{methodName}}(String request) {
+       try {
+         return delegate.{{methodName}}(this.transcodeRequest(request, {{inputType}}.newBuilder())).map(this::transcodeResponse);
+       } catch (UnsupportedOperationException | InvalidProtocolBufferException e) {
+          return io.smallrye.mutiny.Uni.createFrom().failure(new jakarta.ws.rs.WebApplicationException(jakarta.ws.rs.core.Response.Status.NOT_IMPLEMENTED));
+       }
+    }
+    {{/unaryUnaryMethods}}
+
+}

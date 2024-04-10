@@ -1,0 +1,8 @@
+# Project exclude paths
+/api/target/
+/deployment/target/
+/integration-tests/target/
+/openapi-proto/target/
+/proto/target/
+/protoc/target/
+/runtime/target/
