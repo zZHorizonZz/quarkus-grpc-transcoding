@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.google.api.AnnotationsProto;
+import com.google.api.HttpRule;
 import com.google.common.base.Strings;
 import com.google.common.html.HtmlEscapers;
 import com.google.protobuf.DescriptorProtos;
@@ -149,30 +150,31 @@ public class MutinyGrpcGenerator extends Generator {
         methodContext.httpMethod = "GET";
 
         if (methodProto.getOptions().hasExtension(AnnotationsProto.http)) {
-            if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasGet()) {
+            // Extract the HTTP rule from the method options (if present)
+            HttpRule httpRule = getHttpRule(methodProto);
+            if (httpRule == null) {
+                throw new IllegalArgumentException("HTTP rule is not defined for method " + methodProto.getName());
+            }
+
+            // Determine HTTP method and path based on the HTTP rule
+            if (httpRule.hasGet()) {
                 methodContext.httpMethod = "GET";
-                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getGet();
-                log.info("HTTP GET method found: " + methodContext.httpPath);
-            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasPost()) {
+                methodContext.httpPath = httpRule.getGet();
+            } else if (httpRule.hasPost()) {
                 methodContext.httpMethod = "POST";
-                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getPost();
-                log.info("HTTP POST method found: " + methodContext.httpPath);
-            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasPut()) {
+                methodContext.httpPath = httpRule.getPost();
+            } else if (httpRule.hasPut()) {
                 methodContext.httpMethod = "PUT";
-                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getPut();
-                log.info("HTTP PUT method found: " + methodContext.httpPath);
-            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasDelete()) {
+                methodContext.httpPath = httpRule.getPut();
+            } else if (httpRule.hasDelete()) {
                 methodContext.httpMethod = "DELETE";
-                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getDelete();
-                log.info("HTTP DELETE method found: " + methodContext.httpPath);
-            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasPatch()) {
+                methodContext.httpPath = httpRule.getDelete();
+            } else if (httpRule.hasPatch()) {
                 methodContext.httpMethod = "PATCH";
-                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getPatch();
-                log.info("HTTP PATCH method found: " + methodContext.httpPath);
-            } else if (methodProto.getOptions().getExtension(AnnotationsProto.http).hasCustom()) {
+                methodContext.httpPath = httpRule.getPatch();
+            } else if (httpRule.hasCustom()) {
                 methodContext.httpMethod = "CUSTOM";
-                methodContext.httpPath = methodProto.getOptions().getExtension(AnnotationsProto.http).getCustom().getPath();
-                log.info("HTTP CUSTOM method found: " + methodContext.httpPath);
+                methodContext.httpPath = httpRule.getCustom().getPath();
             }
         }
 
@@ -200,6 +202,13 @@ public class MutinyGrpcGenerator extends Generator {
             methodContext.grpcCallsMethodName = "asyncBidiStreamingCall";
         }
         return methodContext;
+    }
+
+    private HttpRule getHttpRule(DescriptorProtos.MethodDescriptorProto methodProto) {
+        if (methodProto.getOptions().hasExtension(AnnotationsProto.http)) {
+            return methodProto.getOptions().getExtension(AnnotationsProto.http);
+        }
+        return null;
     }
 
     static String adaptMethodName(String name) {
